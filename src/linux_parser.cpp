@@ -46,15 +46,24 @@ string LinuxParser::GetValue(string name, string path, char divider, bool replac
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::Kernel() {
-  string os, version, kernel;
+    string kernel = LinuxParser::SplitFile(kProcDirectory + kVersionFilename, 2);
+    return kernel;
+}
+
+string LinuxParser::SplitFile(string path, int index){
+  string selectedString;
   string line;
-  std::ifstream stream(kProcDirectory + kVersionFilename);
+  int i = 0;
+  std::ifstream stream(path);
   if (stream.is_open()) {
     std::getline(stream, line);
     std::istringstream linestream(line);
-    linestream >> os >> version >> kernel;
+    while(i <= index){
+        linestream >> selectedString;
+        i++;
+    }
   }
-  return kernel;
+  return selectedString;
 }
 
 // BONUS: Update this to use std::filesystem
@@ -88,7 +97,11 @@ float LinuxParser::MemoryUtilization() {
 }
 
 // TODO: Read and return the system uptime
-long LinuxParser::UpTime() { return 0; }
+long LinuxParser::UpTime() { 
+    string upTimeString = SplitFile(kProcDirectory + kUptimeFilename, 0);
+    long upTime = std::stol(upTimeString);
+    return upTime;
+}
 
 // TODO: Read and return the number of jiffies for the system
 long LinuxParser::Jiffies() { return 0; }
