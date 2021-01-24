@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "linux_parser.h"
 
@@ -12,12 +13,12 @@ using std::vector;
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
-  string value = LinuxParser::GetValue("PRETTY_NAME", kOSPath);
+  string value = LinuxParser::GetValue("PRETTY_NAME", kOSPath, '=');
   return value;
 }
 
 // Helper Function to get value for given key from key value file
-string LinuxParser::GetValue(string name, string path){
+string LinuxParser::GetValue(string name, string path, char divider){
   string line;
   string key;
   string value;
@@ -25,7 +26,7 @@ string LinuxParser::GetValue(string name, string path){
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::replace(line.begin(), line.end(), ' ', '_');
-      std::replace(line.begin(), line.end(), '=', ' ');
+      std::replace(line.begin(), line.end(), divider, ' ');
       std::replace(line.begin(), line.end(), '"', ' ');
       std::istringstream linestream(line);
       while (linestream >> key >> value) {
@@ -72,7 +73,14 @@ vector<int> LinuxParser::Pids() {
 }
 
 // TODO: Read and return the system memory utilization
-float LinuxParser::MemoryUtilization() { return 0.0; }
+float LinuxParser::MemoryUtilization() { 
+    string memTotalString = LinuxParser::GetValue("MemTotal",kProcDirectory + kMeminfoFilename, ':');
+    float memTotal = std::stof(memTotalString);
+    string memFreeString = LinuxParser::GetValue("MemFree",kProcDirectory + kMeminfoFilename, ':');
+    float memFree = std::stof(memFreeString);
+    float memUtil = (memTotal-memFree)/memTotal;
+    return memUtil;
+}
 
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() { return 0; }
