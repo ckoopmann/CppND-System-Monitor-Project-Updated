@@ -12,10 +12,16 @@ using std::vector;
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
+  string value = LinuxParser::GetValue("PRETTY_NAME", kOSPath);
+  return value;
+}
+
+// Helper Function to get value for given key from key value file
+string LinuxParser::GetValue(string name, string path){
   string line;
   string key;
   string value;
-  std::ifstream filestream(kOSPath);
+  std::ifstream filestream(path);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::replace(line.begin(), line.end(), ' ', '_');
@@ -23,14 +29,13 @@ string LinuxParser::OperatingSystem() {
       std::replace(line.begin(), line.end(), '"', ' ');
       std::istringstream linestream(line);
       while (linestream >> key >> value) {
-        if (key == "PRETTY_NAME") {
+        if (key == name) {
           std::replace(value.begin(), value.end(), '_', ' ');
           return value;
         }
       }
     }
   }
-  return value;
 }
 
 // DONE: An example of how to read data from the filesystem
