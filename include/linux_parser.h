@@ -25,7 +25,7 @@ std::vector<int> Pids();
 int TotalProcesses();
 int RunningProcesses();
 std::string OperatingSystem();
-std::string GetValue(std::string name, std::string path, char divider);
+std::string GetValue(std::string name, std::string path, char divider, bool replacements);
 std::string Kernel();
 
 // CPU

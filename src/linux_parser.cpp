@@ -13,31 +13,36 @@ using std::vector;
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
-  string value = LinuxParser::GetValue("PRETTY_NAME", kOSPath, '=');
+  string value = LinuxParser::GetValue("PRETTY_NAME", kOSPath, '=', true);
   return value;
 }
 
 // Helper Function to get value for given key from key value file
-string LinuxParser::GetValue(string name, string path, char divider){
+string LinuxParser::GetValue(string name, string path, char divider, bool replacements){
   string line;
   string key;
   string value;
   std::ifstream filestream(path);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
-      std::replace(line.begin(), line.end(), ' ', '_');
-      std::replace(line.begin(), line.end(), divider, ' ');
-      std::replace(line.begin(), line.end(), '"', ' ');
+      if(replacements) {
+        std::replace(line.begin(), line.end(), ' ', '_');
+        std::replace(line.begin(), line.end(), divider, ' ');
+        std::replace(line.begin(), line.end(), '"', ' ');
+      }
       std::istringstream linestream(line);
       while (linestream >> key >> value) {
         if (key == name) {
-          std::replace(value.begin(), value.end(), '_', ' ');
+          if(replacements) {
+            std::replace(value.begin(), value.end(), '_', ' ');
+          }
           return value;
         }
       }
     }
   }
 }
+
 
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::Kernel() {
@@ -74,9 +79,9 @@ vector<int> LinuxParser::Pids() {
 
 // TODO: Read and return the system memory utilization
 float LinuxParser::MemoryUtilization() { 
-    string memTotalString = LinuxParser::GetValue("MemTotal",kProcDirectory + kMeminfoFilename, ':');
+    string memTotalString = LinuxParser::GetValue("MemTotal",kProcDirectory + kMeminfoFilename, ':', true);
     float memTotal = std::stof(memTotalString);
-    string memFreeString = LinuxParser::GetValue("MemFree",kProcDirectory + kMeminfoFilename, ':');
+    string memFreeString = LinuxParser::GetValue("MemFree",kProcDirectory + kMeminfoFilename, ':', true);
     float memFree = std::stof(memFreeString);
     float memUtil = (memTotal-memFree)/memTotal;
     return memUtil;
@@ -102,10 +107,18 @@ long LinuxParser::IdleJiffies() { return 0; }
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
 // TODO: Read and return the total number of processes
-int LinuxParser::TotalProcesses() { return 0; }
+int LinuxParser::TotalProcesses() { 
+    string totalProcessesString = LinuxParser::GetValue("processes", kProcDirectory + kStatFilename, ' ', false);
+    int totalProcesses = std::stoi(totalProcessesString);
+    return totalProcesses;
+}
 
 // TODO: Read and return the number of running processes
-int LinuxParser::RunningProcesses() { return 0; }
+int LinuxParser::RunningProcesses() { 
+    string runningProcessesString = LinuxParser::GetValue("procs_running", kProcDirectory + kStatFilename, ' ', false);
+    int runningProcesses = std::stoi(runningProcessesString);
+    return runningProcesses;
+}
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
