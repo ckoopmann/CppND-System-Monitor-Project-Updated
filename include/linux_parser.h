@@ -27,6 +27,7 @@ int RunningProcesses();
 std::string OperatingSystem();
 std::string GetValue(std::string name, std::string path, char divider, bool replacements);
 std::string SplitFile(std::string path, int index);
+long RetrieveCpuSum(std::vector<int> indices);
 std::string Kernel();
 
 // CPU
