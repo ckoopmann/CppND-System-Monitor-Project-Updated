@@ -37,7 +37,28 @@ string Process::Command() {
 string Process::Ram() { return string(); }
 
 // TODO: Return the user (name) that generated this process
-string Process::User() { return string(); }
+string Process::User() { 
+    string statusPath = LinuxParser::kProcDirectory + "/" + to_string(pid) + LinuxParser::kStatusFilename;
+    string userId = LinuxParser::GetValue("Uid", statusPath, ':', true);
+
+    std::ifstream filestream(LinuxParser::kPasswordPath);
+    string userName = "";
+    string line;
+    string curUid;
+    string whatever;
+    if (filestream.is_open()) {
+        while(std::getline(filestream, line)){
+            std::replace(line.begin(), line.end(), ' ', '_');
+            std::replace(line.begin(), line.end(), ':', ' ');
+            std::istringstream linestream(line);
+            linestream >> userName >> whatever >> curUid;
+            if(curUid == userId){
+                return userName;
+            }
+        }
+    }
+    return "NOTFOUND";
+}
 
 // TODO: Return the age of this process (in seconds)
 long int Process::UpTime() { 
