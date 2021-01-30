@@ -6,6 +6,7 @@
 
 #include "process.h"
 #include "linux_parser.h"
+#include "system.h"
 
 using std::string;
 using std::to_string;
@@ -44,7 +45,9 @@ long int Process::UpTime() {
     string upTimeStr = LinuxParser::SplitFile(upTimePath, 21);
     long upTimeTicks = std::stol(upTimeStr);
     long clockTicks = sysconf(_SC_CLK_TCK);
-    long upTimeSeconds = upTimeTicks / clockTicks;
+    long upTimeOffsetSeconds = upTimeTicks / clockTicks;
+    System system;
+    long upTimeSeconds = system.UpTime() - upTimeOffsetSeconds;
     return upTimeSeconds;
 }
 
