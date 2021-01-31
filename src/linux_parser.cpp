@@ -7,7 +7,6 @@
 
 #include "linux_parser.h"
 
-using std::stof;
 using std::string;
 using std::to_string;
 using std::vector;
@@ -91,9 +90,9 @@ vector<int> LinuxParser::Pids() {
 // TODO: Read and return the system memory utilization
 float LinuxParser::MemoryUtilization() { 
     string memTotalString = GetValue("MemTotal",kProcDirectory + kMeminfoFilename, ':', true);
-    float memTotal = std::stof(memTotalString);
+    float memTotal = (float) StringToLong(memTotalString);
     string memFreeString = GetValue("MemFree",kProcDirectory + kMeminfoFilename, ':', true);
-    float memFree = std::stof(memFreeString);
+    float memFree = (float) StringToLong(memFreeString);
     float memUtil = (memTotal-memFree)/memTotal;
     return memUtil;
 }
@@ -101,7 +100,7 @@ float LinuxParser::MemoryUtilization() {
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() { 
     string upTimeString = SplitFile(kProcDirectory + kUptimeFilename, 0);
-    long upTime = std::stol(upTimeString);
+    long upTime = StringToLong(upTimeString);
     return upTime;
 }
 
@@ -114,10 +113,10 @@ long LinuxParser::Jiffies() {
 // TODO: Read and return the number of active jiffies for a PID
 long LinuxParser::ActiveJiffies(int pid) { 
     string statPath = LinuxParser::kProcDirectory + "/" + to_string(pid) + LinuxParser::kStatFilename;
-    long utime = std::stol(LinuxParser::SplitFile(statPath, 13));
-    long stime = std::stol(LinuxParser::SplitFile(statPath, 14));
-    long cutime = std::stol(LinuxParser::SplitFile(statPath, 15));
-    long cstime = std::stol(LinuxParser::SplitFile(statPath, 16));
+    long utime = StringToLong(LinuxParser::SplitFile(statPath, 13));
+    long stime = StringToLong(LinuxParser::SplitFile(statPath, 14));
+    long cutime = StringToLong(LinuxParser::SplitFile(statPath, 15));
+    long cstime = StringToLong(LinuxParser::SplitFile(statPath, 16));
     long totalTime = utime + stime + cutime + cstime;
     return totalTime; }
 
@@ -131,7 +130,7 @@ long LinuxParser::RetrieveCpuSum(vector<int> indices){
     long totalJiffies = 0;
     for(int index : indices){
         string JiffiesString = SplitFile(kProcDirectory + kStatFilename, index);
-        totalJiffies += std::stol(JiffiesString);
+        totalJiffies += StringToLong(JiffiesString);
     }
     return totalJiffies; 
 }
@@ -174,7 +173,7 @@ string LinuxParser::Command(int pid) {
 string LinuxParser::Ram(int pid) { 
     string statusPath = kProcDirectory + "/" + to_string(pid) + kStatusFilename;
     string ramUsageKb = GetValue("VmSize", statusPath, ':', true);
-    long ramUsageMb = std::stol(ramUsageKb) / 1000;
+    long ramUsageMb = StringToLong(ramUsageKb) / 1000;
     string ramUsage = to_string(ramUsageMb);
     return ramUsage;
 }
@@ -213,9 +212,19 @@ string LinuxParser::User(int pid) {
 long LinuxParser::UpTime(int pid) { 
     string upTimePath = LinuxParser::kProcDirectory + "/" + to_string(pid) + LinuxParser::kStatFilename;
     string upTimeStr = LinuxParser::SplitFile(upTimePath, 21);
-    long upTimeTicks = std::stol(upTimeStr);
+    long upTimeTicks = StringToLong(upTimeStr);
     long clockTicks = sysconf(_SC_CLK_TCK);
     long upTimeOffsetSeconds = upTimeTicks / clockTicks;
     long upTimeSeconds = UpTime() - upTimeOffsetSeconds;
     return upTimeSeconds;
+}
+
+long LinuxParser::StringToLong(string text){
+    long number;
+    try {
+        number = std::stol(text);
+    } catch (...) {
+        number = 0;
+    }
+    return number;
 }
