@@ -22,21 +22,6 @@ int Process::Pid() { return pid; }
 
 // TODO: Return this process's CPU utilization
 float Process::CpuUtilization() { 
-    long upTimeOld = UpTime();
-    float totalTimeOld = TotalTime();
-
-    int samplingPeriodSeconds = 1;
-    usleep(samplingPeriodSeconds * 1000000);
-
-    long upTimeNew = UpTime();
-    float totalTimeNew = TotalTime();
-
-    float utilization  = (totalTimeNew - totalTimeOld) / ((float) (upTimeNew - upTimeOld));
-
-    return utilization;
-}
-
-float Process::TotalTime(){
     string statPath = LinuxParser::kProcDirectory + "/" + to_string(pid) + LinuxParser::kStatFilename;
     long utime = std::stol(LinuxParser::SplitFile(statPath, 13));
     long stime = std::stol(LinuxParser::SplitFile(statPath, 14));
@@ -46,7 +31,10 @@ float Process::TotalTime(){
     long totalTime = utime + stime + cutime + cstime;
     long clockTicks = sysconf(_SC_CLK_TCK);
     float totalTimeS = ((float) totalTime / (float) clockTicks);
-    return totalTimeS;
+    long upTime = UpTime();
+    float utilization  = totalTimeS / ((float) upTime);
+
+    return utilization;
 }
 
 // TODO: Return the command that generated this process
