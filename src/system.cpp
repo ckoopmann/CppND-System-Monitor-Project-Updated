@@ -3,6 +3,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "linux_parser.h"
 #include "process.h"
@@ -23,6 +24,7 @@ vector<Process>& System::Processes() {
     for(int pid : LinuxParser::Pids()){
         processes_.push_back(Process(pid));
     }
+    std::sort(processes_.begin(), processes_.end());
     return processes_; }
 
 // TODO: Return the system's kernel identifier (string)
